@@ -36,3 +36,5 @@
 .\objects\main.o: .\System\timer.h
 .\objects\main.o: .\Hardware\pwm.h
 .\objects\main.o: .\Hardware\ic.h
+.\objects\main.o: .\Hardware\serial.h
+.\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h

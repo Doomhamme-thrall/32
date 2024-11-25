@@ -187,7 +187,7 @@
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
-            <useUlib>0</useUlib>
+            <useUlib>1</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
             <nSecure>0</nSecure>
@@ -749,6 +749,16 @@
               <FileName>ic.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\hardware\ic.h</FilePath>
+            </File>
+            <File>
+              <FileName>serial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hardware\serial.c</FilePath>
+            </File>
+            <File>
+              <FileName>serial.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\hardware\serial.h</FilePath>
             </File>
           </Files>
         </Group>
