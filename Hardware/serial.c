@@ -12,15 +12,26 @@ void serial_init()
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 
 	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;			 // 模式
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_14; // 引脚
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 // 速度
+	GPIO_Init(GPIOA, &GPIO_InitStructure);					 // A or B
+
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;			// 模式
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_13; // 引脚
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		// 速度
+	GPIO_Init(GPIOA, &GPIO_InitStructure);					// A or B
+
+	GPIO_InitTypeDef GPIO_InitStructure;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;	  // 模式
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;		  // 引脚
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;		  // 引脚
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; // 速度
-	GPIO_Init(GPIOA, &GPIO_InitStructure);			  // A or B
+	GPIO_Init(GPIOB, &GPIO_InitStructure);			  // A or B
 
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;	  // 模式
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;		  // 引脚
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;		  // 引脚
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; // 速度
-	GPIO_Init(GPIOA, &GPIO_InitStructure);			  // A or B
+	GPIO_Init(GPIOB, &GPIO_InitStructure);			  // A or B
 
 	USART_InitTypeDef USART_INITStructure;
 	USART_INITStructure.USART_BaudRate = 9600;										// 波特率
@@ -32,6 +43,16 @@ void serial_init()
 	USART_Init(USART1, &USART_INITStructure);
 
 	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
+
+	USART_INITStructure.USART_BaudRate = 9600;										// 波特率
+	USART_INITStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; // 流控
+	USART_INITStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;					// 收发模式
+	USART_INITStructure.USART_Parity = USART_Parity_No;								// 校验位
+	USART_INITStructure.USART_StopBits = USART_StopBits_1;							// 停止位
+	USART_INITStructure.USART_WordLength = USART_WordLength_8b;						// 字长
+	USART_Init(USART3, &USART_INITStructure);
+
+	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE); // 使能接收中断
 
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); // 中断分组
 	NVIC_InitTypeDef NVIC_InitStruct;
@@ -89,7 +110,6 @@ void serial_sendpack(void)
 	}
 	serial_sendbyte(0xFE);
 }
-
 
 uint8_t serial_recdata(void)
 {
