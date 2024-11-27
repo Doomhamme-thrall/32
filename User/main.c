@@ -16,20 +16,24 @@ int main(void)
 	OLED_Init();
 	LED_Init();
 	serial_init();
+	pwm_init();
+	Delay_s(2);
+	pwm_setcompare(1000);
 	while (1)
 	{
-		if (flag == 1)
-		{
-			OLED_ShowString(4, 1, rxpack);
-			
-			if(strcmp(rxpack,"LED_ON")==0){
-				LED1_ON();
-			}
-			if(strcmp(rxpack,"LED_OFF")==0){
-				LED1_OFF();
-			}
-			flag=0;
-		}
+//		if (flag == 1)
+//		{
+//			
+//			OLED_ShowString(4, 1, rxpack);
+//			
+//			if(strcmp(rxpack,"LED_ON")==0){
+//				LED1_ON();
+//			}
+//			if(strcmp(rxpack,"LED_OFF")==0){
+//				LED1_OFF();
+//			}
+//			flag=0;
+//		}
 	}
 }
 

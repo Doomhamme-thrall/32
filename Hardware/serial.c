@@ -22,7 +22,6 @@ void serial_init()
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		// 速度
 	GPIO_Init(GPIOA, &GPIO_InitStructure);					// A or B
 
-	GPIO_InitTypeDef GPIO_InitStructure;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;	  // 模式
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;		  // 引脚
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; // 速度
