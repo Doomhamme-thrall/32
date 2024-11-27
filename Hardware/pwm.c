@@ -6,11 +6,11 @@ void pwm_init(void){
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA,ENABLE);  //打开GPIOA
 		
 	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;       //模式
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;          //引脚
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;   //速度
-	GPIO_Init(GPIOA, &GPIO_InitStructure);              //A or B
-	
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;	  // 模式
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;		  // 引脚
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; // 速度
+	GPIO_Init(GPIOA, &GPIO_InitStructure);			  // A or B
+
 	TIM_InternalClockConfig(TIM2);                       //选择内部时钟
 	
 	TIM_TimeBaseInitTypeDef TimTimeBaseInitScture;
