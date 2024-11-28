@@ -17,8 +17,8 @@ void pwm_init(void)
 	TIM_TimeBaseInitTypeDef TimTimeBaseInitScture;
 	TimTimeBaseInitScture.TIM_ClockDivision = TIM_CKD_DIV1;		// 采样时钟分频
 	TimTimeBaseInitScture.TIM_CounterMode = TIM_CounterMode_Up; // 上升计数
-	TimTimeBaseInitScture.TIM_Period = 1999;					// 计数周期ARR
-	TimTimeBaseInitScture.TIM_Prescaler = 7199;					// 计数分频PSC
+	TimTimeBaseInitScture.TIM_Period = 99;					// 计数周期ARR
+	TimTimeBaseInitScture.TIM_Prescaler = 719;					// 计数分频PSC
 	TimTimeBaseInitScture.TIM_RepetitionCounter = 0;
 	TIM_TimeBaseInit(TIM2, &TimTimeBaseInitScture);
 
@@ -27,13 +27,13 @@ void pwm_init(void)
 	Tim_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
 	Tim_OCInitStructure.TIM_OCNPolarity = TIM_OCPolarity_High;
 	Tim_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-	Tim_OCInitStructure.TIM_Pulse = 1500;	 // CCR  *计数频率=高电平时间
+	Tim_OCInitStructure.TIM_Pulse = 20;	 // CCR  *计数频率=高电平时间
 	TIM_OC2Init(TIM2, &Tim_OCInitStructure); // 初始化通道
 
 	Tim_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
 	Tim_OCInitStructure.TIM_OCNPolarity = TIM_OCPolarity_High;
 	Tim_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-	Tim_OCInitStructure.TIM_Pulse = 1500;	 // CCR  *计数频率=高电平时间
+	Tim_OCInitStructure.TIM_Pulse = 0;	 // CCR  *计数频率=高电平时间
 	TIM_OC1Init(TIM2, &Tim_OCInitStructure); // 初始化通道
 
 	TIM_Cmd(TIM2, ENABLE);

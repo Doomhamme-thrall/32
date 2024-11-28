@@ -1,204 +1,246 @@
 #include "stm32f10x.h" // Device header
-#include "stdio.h"
+#include <stdio.h>
+#include <stdarg.h>
 
-uint8_t txpack[4];
-char rxpack[100];
-uint8_t data;
-uint8_t flag;
+char Serial_RxPacket[100]; // 定义接收数据包数组，数据包格式"@MSG\r\n"
+uint8_t Serial_RxFlag;
 
-void serial_init()
+void Serial_Init(void)
 {
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 
-	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;			 // 模式
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_14; // 引脚
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 // 速度
-	GPIO_Init(GPIOA, &GPIO_InitStructure);					 // A or B
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;			// 模式
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_13; // 引脚
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		// 速度
-	GPIO_Init(GPIOA, &GPIO_InitStructure);					// A or B
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;	  // 模式
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;		  // 引脚
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; // 速度
-	GPIO_Init(GPIOB, &GPIO_InitStructure);			  // A or B
+    USART_InitTypeDef USART_InitStructure;
+    USART_InitStructure.USART_BaudRate = 9600;
+    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
+    USART_InitStructure.USART_Parity = USART_Parity_No;
+    USART_InitStructure.USART_StopBits = USART_StopBits_1;
+    USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+    USART_Init(USART1, &USART_InitStructure);
 
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;	  // 模式
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;		  // 引脚
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; // 速度
-	GPIO_Init(GPIOB, &GPIO_InitStructure);			  // A or B
+    USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
 
-	USART_InitTypeDef USART_INITStructure;
-	USART_INITStructure.USART_BaudRate = 9600;										// 波特率
-	USART_INITStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; // 流控
-	USART_INITStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;					// 收发模式
-	USART_INITStructure.USART_Parity = USART_Parity_No;								// 校验位
-	USART_INITStructure.USART_StopBits = USART_StopBits_1;							// 停止位
-	USART_INITStructure.USART_WordLength = USART_WordLength_8b;						// 字长
-	USART_Init(USART1, &USART_INITStructure);
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 
-	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
+    NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_Init(&NVIC_InitStructure);
 
-	USART_INITStructure.USART_BaudRate = 9600;										// 波特率
-	USART_INITStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; // 流控
-	USART_INITStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;					// 收发模式
-	USART_INITStructure.USART_Parity = USART_Parity_No;								// 校验位
-	USART_INITStructure.USART_StopBits = USART_StopBits_1;							// 停止位
-	USART_INITStructure.USART_WordLength = USART_WordLength_8b;						// 字长
-	USART_Init(USART3, &USART_INITStructure);
-
-	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE); // 使能接收中断
-
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); // 中断分组
-	NVIC_InitTypeDef NVIC_InitStruct;
-	NVIC_InitStruct.NVIC_IRQChannel = USART1_IRQn;		   // 指定通道
-	NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;		   // 开启
-	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 1; // 抢占优先级
-	NVIC_InitStruct.NVIC_IRQChannelSubPriority = 1;		   // 响应优先级
-	NVIC_Init(&NVIC_InitStruct);
-
-	USART_Cmd(USART1, ENABLE);
+    USART_Cmd(USART1, ENABLE);
 }
 
-void serial_sendbyte(uint8_t byte)
+void serial3_Init(void)
 {
-	USART_SendData(USART1, byte);
-	while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET)
-		;
+    GPIO_InitTypeDef GPIO_InitStructure;
+    USART_InitTypeDef USART_InitStructure;
+    NVIC_InitTypeDef NVIC_InitStructure;
+
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+    USART_InitStructure.USART_BaudRate = 9600;
+    USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+    USART_InitStructure.USART_StopBits = USART_StopBits_1;
+    USART_InitStructure.USART_Parity = USART_Parity_No;
+    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+    USART_Init(USART3, &USART_InitStructure);
+
+    USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
+
+    NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+    USART_Cmd(USART3, ENABLE);
 }
 
-void serial_sendsdsring(char *string)
+void Serial_SendByte(uint8_t Byte)
 {
-	int i;
-	for (i = 0; string[i] != 0; i++)
-	{
-		serial_sendbyte(string[i]);
-	}
+    USART_SendData(USART3, Byte);
+    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET)
+        ;
 }
 
-uint32_t power(uint32_t x, uint32_t y)
+void Serial_SendArray(uint8_t *Array, uint16_t Length)
 {
-	uint32_t result = 1;
-	while (y--)
-	{
-		result *= x;
-	}
-	return result;
+    uint16_t i;
+    for (i = 0; i < Length; i++)
+    {
+        Serial_SendByte(Array[i]);
+    }
 }
 
-void serial_sendnum(uint32_t num, uint8_t length)
+void Serial_SendString(char *String)
 {
-	int i;
-	for (i = 0; i < length; i++)
-	{
-		serial_sendbyte(num / power(10, length - i - 1) % 10 + '0');
-	}
+    uint8_t i;
+    for (i = 0; String[i] != '\0'; i++)
+    {
+        Serial_SendByte(String[i]);
+    }
 }
 
-void serial_sendpack(void)
+uint32_t Serial_Pow(uint32_t X, uint32_t Y)
 {
-	serial_sendbyte(0xFF);
-	int i;
-	for (i = 0; i < 4; i++)
-	{
-		serial_sendbyte(txpack[i]);
-	}
-	serial_sendbyte(0xFE);
+    uint32_t Result = 1;
+    while (Y--)
+    {
+        Result *= X;
+    }
+    return Result;
 }
 
-uint8_t serial_recdata(void)
+void Serial_SendNumber(uint32_t Number, uint8_t Length)
 {
-	return data;
+    uint8_t i;
+    for (i = 0; i < Length; i++)
+    {
+        Serial_SendByte(Number / Serial_Pow(10, Length - i - 1) % 10 + '0');
+    }
 }
 
 int fputc(int ch, FILE *f)
 {
-	serial_sendbyte(ch);
-	return ch;
-} // printf输出到串口
+    Serial_SendByte(ch);
+    return ch;
+}
+
+void Serial_Printf(char *format, ...)
+{
+    char String[100];
+    va_list arg;
+    va_start(arg, format);
+    vsprintf(String, format, arg);
+    va_end(arg);
+    Serial_SendString(String);
+}
+
+uint8_t Serial_GetRxFlag(void)
+{
+    if (Serial_RxFlag == 1)
+    {
+        Serial_RxFlag = 0;
+        return 1;
+    }
+    return 0;
+}
 
 void USART1_IRQHandler(void)
 {
-	static uint8_t RxState = 0;
-	static uint8_t pRxPacket = 0;
-	if (USART_GetITStatus(USART1, USART_IT_RXNE) == SET)
-	{
-		uint8_t RxData = USART_ReceiveData(USART1);
+    static uint8_t RxState = 0;                          // 定义表示当前状态机状态的静态变量
+    static uint8_t pRxPacket = 0;                        // 定义表示当前接收数据位置的静态变量
+    if (USART_GetITStatus(USART1, USART_IT_RXNE) == SET) // 判断是否是USART1的接收事件触发的中断
+    {
+        uint8_t RxData = USART_ReceiveData(USART1); // 读取数据寄存器，存放在接收的数据变量
 
-		if (RxState == 0)
-		{
-			if (RxData == '@' && flag == 0)
-			{
-				RxState = 1;
-				pRxPacket = 0;
-			}
-		}
+        /*使用状态机的思路，依次处理数据包的不同部分*/
 
-		else if (RxState == 1)
-		{
-			if (RxData == '\r')
-			{
-				RxState = 2;
-			}
-			else
-			{
-				rxpack[pRxPacket] = RxData;
-				pRxPacket++;
-			}
-		}
-		else if (RxState == 2)
-		{
-			if (RxData == '\n')
-			{
-				RxState = 0;
-				rxpack[pRxPacket] = '\0';
-				flag = 1;
-			}
-		}
+        /*当前状态为0，接收数据包包头*/
+        if (RxState == 0)
+        {
+            if (RxData == '@' && Serial_RxFlag == 0) // 如果数据确实是包头，并且上一个数据包已处理完毕
+            {
+                RxState = 1;   // 置下一个状态
+                pRxPacket = 0; // 数据包的位置归零
+            }
+        }
+        /*当前状态为1，接收数据包数据，同时判断是否接收到了第一个包尾*/
+        else if (RxState == 1)
+        {
+            if (RxData == '\r') // 如果收到第一个包尾
+            {
+                RxState = 2; // 置下一个状态
+            }
+            else // 接收到了正常的数据
+            {
+                Serial_RxPacket[pRxPacket] = RxData; // 将数据存入数据包数组的指定位置
+                pRxPacket++;                         // 数据包的位置自增
+            }
+        }
+        /*当前状态为2，接收数据包第二个包尾*/
+        else if (RxState == 2)
+        {
+            if (RxData == '\n') // 如果收到第二个包尾
+            {
+                RxState = 0;                       // 状态归0
+                Serial_RxPacket[pRxPacket] = '\0'; // 将收到的字符数据包添加一个字符串结束标志
+                Serial_RxFlag = 1;                 // 接收数据包标志位置1，成功接收一个数据包
+            }
+        }
 
-		USART_ClearITPendingBit(USART1, USART_IT_RXNE);
-	}
+        USART_ClearITPendingBit(USART1, USART_IT_RXNE); // 清除标志位
+    }
 }
 
-// void USART1_IRQHandler(void)
-// {
-// 	static uint8_t RxState = 0;
-// 	static uint8_t pRxPacket = 0;
-// 	if (USART_GetITStatus(USART1, USART_IT_RXNE) == SET)
-// 	{
-// 		uint8_t RxData = USART_ReceiveData(USART1);
+void USART3_IRQHandler(void)
+{
+    static uint8_t RxState = 0;                          // 定义表示当前状态机状态的静态变量
+    static uint8_t pRxPacket = 0;                        // 定义表示当前接收数据位置的静态变量
+    if (USART_GetITStatus(USART3, USART_IT_RXNE) == SET) // 判断是否是USART1的接收事件触发的中断
+    {
+        uint8_t RxData = USART_ReceiveData(USART3); // 读取数据寄存器，存放在接收的数据变量
 
-// 		if (RxState == 0)
-// 		{
-// 			if (RxData == 0xFF)
-// 			{
-// 				RxState = 1;
-// 				pRxPacket = 0;
-// 			}
-// 		}
+        /*使用状态机的思路，依次处理数据包的不同部分*/
 
-// 		else if (RxState == 1)
-// 		{
-// 			rxpack[pRxPacket] = RxData;
-// 			pRxPacket++;
-// 			if (pRxPacket >= 4)
-// 			{
-// 				RxState = 2;
-// 			}
-// 		}
-// 		else if (RxState == 2)
-// 		{
-// 			if (RxData == 0xFE)
-// 			{
-// 				RxState = 0;
-// 				flag = 1;
-// 			}
-// 		}
+        /*当前状态为0，接收数据包包头*/
+        if (RxState == 0)
+        {
+            if (RxData == '@' && Serial_RxFlag == 0) // 如果数据确实是包头，并且上一个数据包已处理完毕
+            {
+                RxState = 1;   // 置下一个状态
+                pRxPacket = 0; // 数据包的位置归零
+            }
+        }
+        /*当前状态为1，接收数据包数据，同时判断是否接收到了第一个包尾*/
+        else if (RxState == 1)
+        {
+            if (RxData == '\r') // 如果收到第一个包尾
+            {
+                RxState = 2; // 置下一个状态
+            }
+            else // 接收到了正常的数据
+            {
+                Serial_RxPacket[pRxPacket] = RxData; // 将数据存入数据包数组的指定位置
+                pRxPacket++;                         // 数据包的位置自增
+            }
+        }
+        /*当前状态为2，接收数据包第二个包尾*/
+        else if (RxState == 2)
+        {
+            if (RxData == '\n') // 如果收到第二个包尾
+            {
+                RxState = 0;                       // 状态归0
+                Serial_RxPacket[pRxPacket] = '\0'; // 将收到的字符数据包添加一个字符串结束标志
+                Serial_RxFlag = 1;                 // 接收数据包标志位置1，成功接收一个数据包
+            }
+        }
 
-// 		USART_ClearITPendingBit(USART1, USART_IT_RXNE);
-// 	}
-// }
+        USART_ClearITPendingBit(USART3, USART_IT_RXNE); // 清除标志位
+    }
+}
