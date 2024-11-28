@@ -33,7 +33,7 @@ void pwm_init(void)
 	Tim_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
 	Tim_OCInitStructure.TIM_OCNPolarity = TIM_OCPolarity_High;
 	Tim_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-	Tim_OCInitStructure.TIM_Pulse = 1500;	 // CCR  *计数频率=高电平时间
+	Tim_OCInitStructure.TIM_Pulse = 0;	 // CCR  *计数频率=高电平时间
 	TIM_OC1Init(TIM2, &Tim_OCInitStructure); // 初始化通道
 
 	TIM_Cmd(TIM2, ENABLE);
