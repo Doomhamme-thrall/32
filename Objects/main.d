@@ -30,12 +30,9 @@
 .\objects\main.o: .\Library\misc.h
 .\objects\main.o: .\System\Delay.h
 .\objects\main.o: .\Hardware\OLED.h
-.\objects\main.o: .\Hardware\LED.h
-.\objects\main.o: .\Hardware\redout.h
-.\objects\main.o: .\Hardware\encoder.h
-.\objects\main.o: .\System\timer.h
-.\objects\main.o: .\Hardware\pwm.h
-.\objects\main.o: .\Hardware\ic.h
-.\objects\main.o: .\Hardware\serial.h
+.\objects\main.o: .\Hardware\Serial.h
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\main.o: .\Hardware\LED.h
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\main.o: .\Hardware\serial3.h
+.\objects\main.o: .\Hardware\pwm.h

@@ -1,15 +1,17 @@
-#ifndef __serial_h__
-#define __serial_h__
+#ifndef __SERIAL_H
+#define __SERIAL_H
 
-extern uint8_t txpack[4];
-extern char rxpack[4];
-extern uint8_t flag;
+#include <stdio.h>
 
-void serial_init(void);
-void serial_sendbyte(uint8_t byte);
-void serial_sendsdsring(char *string);
-uint32_t power(uint32_t x, uint32_t y);
-void serial_sendnum(uint32_t num, uint8_t length);
-uint8_t serial_getflag(void);
-void serial_sendpack(void);
+void Serial_Init(void);
+void serial3_Init(void);
+void Serial_SendByte(uint8_t Byte);
+void Serial_SendArray(uint8_t *Array, uint16_t Length);
+void Serial_SendString(char *String);
+void Serial_SendNumber(uint32_t Number, uint8_t Length);
+void Serial_Printf(char *format, ...);
+
+uint8_t Serial_GetRxFlag(void);
+uint8_t Serial_GetRxData(void);
+
 #endif

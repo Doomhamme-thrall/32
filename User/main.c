@@ -1,44 +1,34 @@
 #include "stm32f10x.h" // Device header
 #include "Delay.h"
 #include "OLED.h"
+#include "Serial.h"
 #include "LED.h"
-#include "redout.h"
-#include "encoder.h"
-#include "timer.h"
-#include "pwm.h"
-#include "ic.h"
-#include "serial.h"
-#include "stdio.h"
 #include "string.h"
+#include "serial3.h"
+#include "pwm.h"
+
+uint8_t RxData;
 
 int main(void)
 {
 	OLED_Init();
-	LED_Init();
-	serial_init();
+	OLED_ShowString(1, 1, "PWM:");
+	OLED_ShowString(1, 7, "%");
+	Serial_Init();
+	serial3_Init();
 	pwm_init();
-	Delay_s(2);
-	pwm_setcompare(1000);
+
+	Serial_SendByte('a');
+
 	while (1)
 	{
-//		if (flag == 1)
-//		{
-//			
-//			OLED_ShowString(4, 1, rxpack);
-//			
-//			if(strcmp(rxpack,"LED_ON")==0){
-//				LED1_ON();
-//			}
-//			if(strcmp(rxpack,"LED_OFF")==0){
-//				LED1_OFF();
-//			}
-//			flag=0;
-//		}
+		if (Serial_GetRxFlag() == 1)
+		{
+			RxData = Serial_GetRxData();
+			Serial_SendByte(RxData);
+			int duty = (int)RxData;
+			OLED_ShowHexNum(1, 5, duty, 2);
+			pwm_setcompare(duty);
+		}
 	}
-}
-
-void TIM2_IRQHandler()
-{
-
-	TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
 }
