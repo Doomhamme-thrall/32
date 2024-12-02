@@ -1,86 +1,46 @@
-#include "stm32f10x.h"
+#include "stm32f10x.h" // Device header
 
-/**
- * @brief  初始化PWM
- *
- * TIM1,PE9、PE11、PE13、PE14以及OC1、OC2、OC3、OC4
- */
-void pwm_init(void)
+void PWM_Init(void)
 {
-	RCC_APB1PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE); // 打开TIM1
+    // 1. 开启时钟
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE); // 开启GPIOB时钟
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);  // 开启TIM3时钟
 
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOE, ENABLE); // 打开GPIOE
+    // 2. 配置PB1为复用推挽输出
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;         // PB1引脚
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;   // 复用推挽输出
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; // GPIO速度50MHz
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
+	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;										// 模式
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_13; // 引脚
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;									// 速度
-	GPIO_Init(GPIOB, &GPIO_InitStructure);												// A or B
+    // 3. 配置TIM3定时器
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+    TIM_TimeBaseStructure.TIM_Period = 999;                     // 自动重装载值 (周期)
+    TIM_TimeBaseStructure.TIM_Prescaler = 71;                   // 预分频值 (1MHz计数频率)
+    TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;     // 时钟分频
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; // 向上计数模式
+    TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
 
-	TIM_InternalClockConfig(TIM1); // 选择内部时钟
+    // 4. 配置TIM3输出比较通道
+    TIM_OCInitTypeDef TIM_OCInitStructure;
+    TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;             // PWM模式1
+    TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable; // 输出使能
+    TIM_OCInitStructure.TIM_Pulse = 500;                          // 占空比 (设置为50%)
+    TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;     // 高电平有效
+    TIM_OC4Init(TIM3, &TIM_OCInitStructure);                      // 初始化TIM3通道4
+	TIM_OC3Init(TIM3, &TIM_OCInitStructure);
+	TIM_OC2Init(TIM3, &TIM_OCInitStructure);
+	TIM_OC1Init(TIM3, &TIM_OCInitStructure);
 
-	TIM_TimeBaseInitTypeDef TimTimeBaseInitScture;
-	TimTimeBaseInitScture.TIM_ClockDivision = TIM_CKD_DIV1;		// 采样时钟分频
-	TimTimeBaseInitScture.TIM_CounterMode = TIM_CounterMode_Up; // 上升计数
-	TimTimeBaseInitScture.TIM_Period = 1999;					// 计数周期ARR
-	TimTimeBaseInitScture.TIM_Prescaler = 7199;					// 计数分频PSC
-	TimTimeBaseInitScture.TIM_RepetitionCounter = 0;
-	TIM_TimeBaseInit(TIM1, &TimTimeBaseInitScture);
+//    TIM_OC4PreloadConfig(TIM3, TIM_OCPreload_Enable); // 使能预装载寄存器
+//	TIM_OC3PreloadConfig(TIM3, TIM_OCPreload_Enable);
 
-	TIM_OCInitTypeDef Tim_OCInitStructure;
-	TIM_OCStructInit(&Tim_OCInitStructure);
-	Tim_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
-	Tim_OCInitStructure.TIM_OCNPolarity = TIM_OCPolarity_High;
-	Tim_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-	Tim_OCInitStructure.TIM_Pulse = 1500;	 // CCR  *计数频率=高电平时间
-	TIM_OC4Init(TIM1, &Tim_OCInitStructure); // 初始化通道
-	TIM_OC3Init(TIM1, &Tim_OCInitStructure); // 初始化通道
-	TIM_OC2Init(TIM1, &Tim_OCInitStructure); // 初始化通道
-	TIM_OC1Init(TIM1, &Tim_OCInitStructure); // 初始化通道
+    // 5. 启动TIM3定时器
+    TIM_Cmd(TIM3, ENABLE); // 使能TIM3
 
-	TIM_Cmd(TIM1, ENABLE);
-}
-
-/**
- * @brief  设置PE9占空比
- */
-void pwm_setcompare1(int compare)
-{
-	TIM_SetCompare1(TIM1, compare);
-}
-
-/**
- * @brief  设置PE10占空比
- *
- */
-void pwm_setcompare2(int compare)
-{
-	TIM_SetCompare2(TIM1, compare);
-}
-
-/**
- * @brief  设置PE11占空比
- *
- */
-void pwm_setcompare3(int compare)
-{
-	TIM_SetCompare3(TIM1, compare);
-}
-
-/**
- * @brief  设置PE13占空比
- *
- */
-void pwm_setcompare4(int compare)
-{
-	TIM_SetCompare4(TIM1, compare);
-}
-
-/**
- * @brief  设置TIM1的预分频
- *
- */
-void pwm_setprescaler(int prescaler)
-{
-	TIM_PrescalerConfig(TIM1, prescaler, TIM_PSCReloadMode_Immediate);
+    // 6. 启动TIM3主输出
+    TIM_CtrlPWMOutputs(TIM3, ENABLE);
 }
