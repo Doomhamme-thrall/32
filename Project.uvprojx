@@ -760,6 +760,11 @@
               <FileType>5</FileType>
               <FilePath>.\hardware\serial.h</FilePath>
             </File>
+            <File>
+              <FileName>banlance.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hardware\banlance.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
