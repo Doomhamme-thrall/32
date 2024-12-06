@@ -670,6 +670,16 @@
               <FileType>5</FileType>
               <FilePath>.\system\timer.h</FilePath>
             </File>
+            <File>
+              <FileName>dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\system\dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>dma.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\system\dma.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -764,6 +774,16 @@
               <FileName>banlance.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\hardware\banlance.c</FilePath>
+            </File>
+            <File>
+              <FileName>ad.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hardware\ad.c</FilePath>
+            </File>
+            <File>
+              <FileName>ad.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\hardware\ad.h</FilePath>
             </File>
           </Files>
         </Group>
