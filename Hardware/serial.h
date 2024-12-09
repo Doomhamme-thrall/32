@@ -2,21 +2,22 @@
 #define __SERIAL_H
 #include <stdio.h>
 
-
-// 外部变量和函数
-extern Serial3_Data_t serial3_rx_data;
-extern uint8_t Serial_TxPacket[];
-extern int Serial_RxPacket[100];
-
-#define RX_BUFFER_SIZE 64 // 环形缓冲区大小
-#define FRAME_SIZE 23     // 每帧数据长度
-
-// 接收到的解析后的数据
 typedef struct
 {
-    float f1, f2, f3, f4;   // 浮点数
-    uint8_t i1, i2, i3, i4; // 整数
-} Serial3_Data_t;
+    uint8_t value1;
+    uint8_t value2;
+    uint8_t value3;
+    uint8_t value4;
+    uint8_t int1;
+    uint8_t int2;
+    uint8_t int3;
+    uint8_t int4;
+} SerialData_t;
+
+#define RX_BUFFER_SIZE 33 // 环形缓冲区大小
+#define FRAME_SIZE 11     // 每帧数据长度
+
+// 接收到的解析后的数据
 
 uint8_t Serial_GetRxFlag(void);
 void serial1_init(void);

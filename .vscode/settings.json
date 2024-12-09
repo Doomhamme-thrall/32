@@ -1,6 +1,7 @@
 {
   "files.associations": {
     "stm32f10x.h": "c",
-    "cstdint": "cpp"
+    "cstdint": "cpp",
+    "serial.h": "c"
   }
 }

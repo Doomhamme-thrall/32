@@ -87,10 +87,11 @@ void JY901S_Init(void)
     Delay_ms(100);
     JY901S_SendCommand(cmds[1], 5);
     Delay_ms(100);
-    JY901S_SendCommand(cmds[9], 5);
+    JY901S_SendCommand(cmds[2], 5);
     Delay_ms(100);
 
-    Serial_SendString("inited\0");
+    JY901S_SendCommand(cmds[9], 5);
+    Delay_ms(100);
 }
 
 // DMA 数据处理函数
@@ -110,10 +111,6 @@ void JY901S_ProcessDMA(void)
             JY901S_ProcessBuffer(&dma_buffer[0], current_position);
         }
         last_position = current_position;
-
-        // 调试打印缓冲区数据
-        // Serial_SendString("processing\0");
-        // Serial_SendArray(dma_buffer, 22);
     }
 }
 
@@ -131,6 +128,7 @@ static void JY901S_ProcessBuffer(uint8_t *buffer, uint16_t length)
             }
             if ((checksum & 0xFF) == buffer[i + 10])
             {
+                // printf("checksum correct\n");
                 uint8_t type = buffer[i + 1];
                 switch (type)
                 {
