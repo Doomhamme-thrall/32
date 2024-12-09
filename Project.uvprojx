@@ -810,6 +810,21 @@
               <FileType>5</FileType>
               <FilePath>.\hardware\jy901s.h</FilePath>
             </File>
+            <File>
+              <FileName>balance.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\hardware\balance.h</FilePath>
+            </File>
+            <File>
+              <FileName>motion.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hardware\motion.c</FilePath>
+            </File>
+            <File>
+              <FileName>motion.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\hardware\motion.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

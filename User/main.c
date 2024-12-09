@@ -7,36 +7,35 @@
 #include "pwm.h"
 #include "dma.h"
 #include "ad.h"
-#include "mpu6050.h"
-#include "MPU6050_Reg.h"
+#include "jy901s.h"
 
 uint8_t RxData;
 // extern char Serial_RxPacket[];
 extern uint8_t Serial_RxFlag;
-uint8_t id;
-int16_t AX, AY, AZ, GX, GY, GZ;
 
 int main(void)
 {
-	// serial1_init();
-	// PWM_Init();
-	OLED_Init();
+	serial1_init();
+	serial3_Init();
+	PWM_Init();
+	Motion_Init(kp,ki,kd);
+	Balance_Init(kp,kd);
+	// OLED_Init();
 
-	mpu_init();
+	JY901S_Init();
 	//	OLED_ShowNum(2,2,33,2);
-
-	id = mpu_read(MPU6050_WHO_AM_I);
-	OLED_ShowHexNum(1, 1, id, 2);
-
+	JY901S_Data_t sensor_data;
 	while (1)
 	{
-		MPU6050_GetData(&AX, &AY, &AZ, &GX, &GY, &GZ); // 获取MPU6050的数据
-		OLED_ShowSignedNum(2, 1, AX, 5);			   // OLED显示数据
-		OLED_ShowSignedNum(3, 1, AY, 5);
-		OLED_ShowSignedNum(4, 1, AZ, 5);
-		OLED_ShowSignedNum(2, 8, GX, 5);
-		OLED_ShowSignedNum(3, 8, GY, 5);
-		OLED_ShowSignedNum(4, 8, GZ, 5);
-		Delay_ms(100);
+
+		JY901S_ProcessDMA();
+		JY901S_GetData(&sensor_data);
+
+		Balance_Control(float current_value, float current_rate, int16_t pwm_output[4]);
+		Motion_Control(float target_accel, float target_angle, float current_accel, float current_yaw_rate, int16_t pwm_output[4]);
+		// 打印传感器数据
+		// printf("Ax: %.2f Ay: %.2f Az: %.2f\n", sensor_data.ax, sensor_data.ay, sensor_data.az);
+		// printf("Wx: %.2f Wy: %.2f Wz: %.2f\n", sensor_data.wx, sensor_data.wy, sensor_data.wz);
+		printf("Roll: %.2f Pitch: %.2f Yaw: %.2f\n", sensor_data.roll, sensor_data.pitch, sensor_data.yaw);
 	}
 }

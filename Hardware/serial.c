@@ -85,8 +85,8 @@ void serial3_Init(void)
 
 void Serial_SendByte(uint8_t Byte)
 {
-    USART_SendData(USART3, Byte);
-    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET)
+    USART_SendData(USART1, Byte);
+    while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET)
         ;
 }
 
@@ -108,28 +108,34 @@ void Serial_SendString(char *String)
     }
 }
 
-// uint32_t Serial_Pow(uint32_t X, uint32_t Y)
-// {
-//     uint32_t Result = 1;
-//     while (Y--)
-//     {
-//         Result *= X;
-//     }
-//     return Result;
-// }
+uint32_t Serial_Pow(uint32_t X, uint32_t Y)
+{
+    uint32_t Result = 1;
+    while (Y--)
+    {
+        Result *= X;
+    }
+    return Result;
+}
 
-// void Serial_SendNumber(uint32_t Number, uint8_t Length)
-// {
-//     uint8_t i;
-//     for (i = 0; i < Length; i++)
-//     {
-//         Serial_SendByte(Number / Serial_Pow(10, Length - i - 1) % 10 + '0');
-//     }
-// }
+void Serial_SendNumber(uint32_t Number, uint8_t Length)
+{
+    uint8_t i;
+    for (i = 0; i < Length; i++)
+    {
+        Serial_SendByte(Number / Serial_Pow(10, Length - i - 1) % 10 + '0');
+    }
+}
 
 int fputc(int ch, FILE *f)
 {
-    Serial_SendByte(ch);
+    // 通过 USART1 发送字符（假设您使用 USART1）
+    USART_SendData(USART1, (uint8_t)ch);
+
+    // 等待发送完成
+    while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET)
+        ;
+
     return ch;
 }
 
