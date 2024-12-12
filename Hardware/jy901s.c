@@ -3,7 +3,7 @@
 #include "Delay.h"
 #include "serial.h"
 
-#define BUFFER_SIZE 22 // 必须是 JY901 数据帧大小（11 字节）的整数倍
+#define BUFFER_SIZE 22 
 static uint8_t dma_buffer[BUFFER_SIZE];
 static uint16_t last_position = 0; // 上次处理到的缓冲区位置
 
@@ -70,27 +70,27 @@ void JY901S_Init(void)
 
     // 初始化指令发送
     uint8_t cmds[][5] = {
-        {0xff, 0xaa, 0x69, 0x88, 0xb5}, // 解锁指令
-        {0xff, 0xaa, 0x00, 0x01, 0x00}, // 恢复默认设置
-        {0xff, 0xaa, 0x01, 0x01, 0x00}, // 加速度计校准
-        {0xff, 0xaa, 0x01, 0x02, 0x00}, // 磁场校准
-        {0xff, 0xaa, 0x01, 0x03, 0x00}, // 高度归零
-        {0xff, 0xaa, 0x23, 0x00, 0x00}, // 安装方向水平
-        {0xff, 0xaa, 0x22, 0x01, 0x00}, // 解除休眠
-        {0xff, 0xaa, 0x24, 0x01, 0x00}, // 算法转换
-        {0xff, 0xaa, 0x63, 0x00, 0x00}, // 陀螺仪自动校准
-        {0xff, 0xaa, 0x02, 0x1e, 0x02}, // 设置回传内容
-        {0xff, 0xaa, 0x03, 0x09, 0x00}  // 设置回传速率
+        {0xff, 0xaa, 0x69, 0x88, 0xb5}, // 0解锁指令
+        {0xff, 0xaa, 0x00, 0x01, 0x00}, // 1恢复默认设置
+        {0xff, 0xaa, 0x00, 0x00, 0x00}, // 2保存
+        {0xff, 0xaa, 0x01, 0x01, 0x00}, // 3加速度计校准
+        {0xff, 0xaa, 0x01, 0x02, 0x00}, // 4磁场校准
+        {0xff, 0xaa, 0x01, 0x03, 0x00}, // 5高度归零
+        {0xff, 0xaa, 0x23, 0x00, 0x00}, // 6安装方向水平
+        {0xff, 0xaa, 0x22, 0x01, 0x00}, // 7解除休眠
+        {0xff, 0xaa, 0x24, 0x01, 0x00}, // 8算法转换
+        {0xff, 0xaa, 0x63, 0x00, 0x00}, // 9陀螺仪自动校准
+        {0xff, 0xaa, 0x02, 0xff, 0xff}, // 10设置回传内容
+        {0xff, 0xaa, 0x03, 0x09, 0x00}  // 11设置回传速率
     };
 
     JY901S_SendCommand(cmds[0], 5);
     Delay_ms(100);
     JY901S_SendCommand(cmds[1], 5);
     Delay_ms(100);
-    JY901S_SendCommand(cmds[2], 5);
+    JY901S_SendCommand(cmds[10], 5);
     Delay_ms(100);
-
-    JY901S_SendCommand(cmds[9], 5);
+    JY901S_SendCommand(cmds[2], 5);
     Delay_ms(100);
 }
 
@@ -132,20 +132,29 @@ static void JY901S_ProcessBuffer(uint8_t *buffer, uint16_t length)
                 uint8_t type = buffer[i + 1];
                 switch (type)
                 {
+                case 0x50:
+                    jy901s_data.m = buffer[i + 6];
+                    jy901s_data.s = buffer[i + 7];
+                    jy901s_data.ms = (buffer[i + 9] << 8) | buffer[i + 8];
+                    printf("time received");
+                    break;
                 case 0x51:
                     jy901s_data.ax = ((int16_t)((buffer[i + 3] << 8) | buffer[i + 2])) / 32768.0f * 16.0f;
                     jy901s_data.ay = ((int16_t)((buffer[i + 5] << 8) | buffer[i + 4])) / 32768.0f * 16.0f;
                     jy901s_data.az = ((int16_t)((buffer[i + 7] << 8) | buffer[i + 6])) / 32768.0f * 16.0f;
+                    printf("acc received ");
                     break;
                 case 0x52:
                     jy901s_data.wx = ((int16_t)((buffer[i + 3] << 8) | buffer[i + 2])) / 32768.0f * 2000.0f;
                     jy901s_data.wy = ((int16_t)((buffer[i + 5] << 8) | buffer[i + 4])) / 32768.0f * 2000.0f;
                     jy901s_data.wz = ((int16_t)((buffer[i + 7] << 8) | buffer[i + 6])) / 32768.0f * 2000.0f;
+                    printf("gyro received ");
                     break;
                 case 0x53:
                     jy901s_data.roll = ((int16_t)((buffer[i + 3] << 8) | buffer[i + 2])) / 32768.0f * 180.0f;
                     jy901s_data.pitch = ((int16_t)((buffer[i + 5] << 8) | buffer[i + 4])) / 32768.0f * 180.0f;
                     jy901s_data.yaw = ((int16_t)((buffer[i + 7] << 8) | buffer[i + 6])) / 32768.0f * 180.0f;
+                    printf("angle received ");
                     break;
                 default:
                     break;

@@ -25,7 +25,7 @@ void PWM_Init(void)
     TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1; // PWM 模式 1
     TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
     TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Disable; // 不使用互补输出
-    TIM_OCInitStructure.TIM_Pulse = 75;                             // 占空比 7.5%，对应 (1500 / 20000) * 100%
+    TIM_OCInitStructure.TIM_Pulse = 1500;                              //  ARR
     TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;        // 高电平有效
     TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_High;      // 不使用互补极性
     TIM_OCInitStructure.TIM_OCIdleState = TIM_OCIdleState_Reset;     // 闲置状态
@@ -41,10 +41,10 @@ void PWM_Init(void)
     TIM_CtrlPWMOutputs(TIM1, ENABLE);
 }
 
-void PWM_Set(int compare[100])
+void PWM_Set(uint16_t *compare)
 {
-    TIM_SetCompare1(TIM1, compare[0] * 100);
-    TIM_SetCompare2(TIM1, compare[1] * 100);
-    TIM_SetCompare3(TIM1, compare[2] * 100);
-    TIM_SetCompare4(TIM1, compare[3] * 100);
+    TIM_SetCompare1(TIM1, compare[0]);
+    TIM_SetCompare2(TIM1, compare[1]);
+    TIM_SetCompare3(TIM1, compare[2]);
+    TIM_SetCompare4(TIM1, compare[3]);
 }

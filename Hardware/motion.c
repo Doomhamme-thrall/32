@@ -1,72 +1,95 @@
+#include "stm32f10x.h"
 #include "motion.h"
-#include "pwm.h"
 
-// 运动控制 PID 参数
-static PID_t accel_pid = {0};
-static PID_t yaw_pid = {0};
+// PWM 限制范围
+#define PWM_STOP 1500
+#define PWM_MAX 1650
+#define PWM_MIN 1350
+#define SPEED_MAX 2.0f
+#define YAW_RATE_MAX 180.0f
 
-// 初始化运动控制器
-void Motion_Init(float kp, float ki, float kd)
+PID_Params speed_pid = {0};
+PID_Params yaw_pid = {0};
+float target_speed = 0.0f;
+float target_yaw_rate = 0.0f;
+
+static void tim2_init(void);
+
+// 运动控制PID初始化
+//  参数:
+//    kp1 - 推进PID的比例系数
+//    ki1 - 推进PID的积分系数
+//    kd1 - 推进PID的微分系数
+//    kp2 - 偏航PID的比例系数
+//    ki2 - 偏航PID的积分系数
+//    kd2 - 偏航PID的微分系数
+void Motion_init(float kp1, float ki1, float kd1, float kp2, float ki2, float kd2)
 {
-    accel_pid.kp = kp;
-    accel_pid.ki = ki;
-    accel_pid.kd = kd;
-    accel_pid.target_value = 0.0f;
-    accel_pid.prev_error = 0.0f;
-    accel_pid.integral = 0.0f;
-
-    yaw_pid.kp = kp;
-    yaw_pid.ki = ki;
-    yaw_pid.kd = kd;
-    yaw_pid.target_value = 0.0f;
-    yaw_pid.prev_error = 0.0f;
-    yaw_pid.integral = 0.0f;
-}
-
-// PID 计算函数
-static float PID_Calculate(PID_t *pid, float current_value)
-{
-    float error = pid->target_value - current_value;
-
-    // 积分和微分计算
-    pid->integral += error;
-    float derivative = error - pid->prev_error;
-
-    // PID 输出
-    float output = pid->kp * error + pid->ki * pid->integral + pid->kd * derivative;
-
-    // 更新上一次误差
-    pid->prev_error = error;
-
-    return output;
+    speed_pid.kp = kp1;
+    speed_pid.ki = ki1;
+    speed_pid.kd = kd1;
+    yaw_pid.kp = kp2;
+    yaw_pid.ki = ki2;
+    yaw_pid.kd = kd2;
+    tim2_init();
 }
 
 // 运动控制函数
-void Motion_Control(float target_accel, float target_angle, float current_accel, float current_yaw_rate, int16_t pwm_output[4])
+void Motion_Calculate(float current_acceleration, float current_yaw_rate, int RT, int LT, int LS, uint16_t pwm[4])
 {
-    // 设置目标值
-    accel_pid.target_value = target_accel;
-    yaw_pid.target_value = target_angle;
+    target_speed = SPEED_MAX * RT / 100.0;
+    target_yaw_rate = YAW_RATE_MAX * LS / 100.0;
 
-    // 计算加速度和方向输出
-    float accel_output = PID_Calculate(&accel_pid, current_accel);
-    float yaw_output = PID_Calculate(&yaw_pid, current_yaw_rate);
+    static float current_speed = 0.0f;
+    static float dt = 0;
+    int prev_time = 0;
+    dt = (TIM2->CNT - prev_time) / 10000.0f;
+    prev_time = TIM2->CNT;
 
-    // 基础 PWM 值
-    int16_t base_pwm = 1500 + (int16_t)accel_output;
+    // 通过加速度积分得到速度
+    current_speed += current_acceleration * dt;
 
-    // 差速计算
-    int16_t diff_pwm = (int16_t)yaw_output;
+    // 速度PID计算
+    float speed_error = target_speed - current_speed;
+    speed_pid.integral += speed_error * dt;
+    float speed_derivative = (speed_error - speed_pid.prev_error) / dt;
+    speed_pid.prev_error = speed_error;
+    float speed_output = speed_pid.kp * speed_error + speed_pid.ki * speed_pid.integral + speed_pid.kd * speed_derivative;
 
-    // 计算左右推进器 PWM
-    int16_t left_pwm = base_pwm - diff_pwm;
-    int16_t right_pwm = base_pwm + diff_pwm;
+    // 偏航角速度PID计算
+    float yaw_error = target_yaw_rate - current_yaw_rate;
+    yaw_pid.integral += yaw_error * dt;
+    float yaw_derivative = (yaw_error - yaw_pid.prev_error) / dt;
+    yaw_pid.prev_error = yaw_error;
+    float yaw_output = yaw_pid.kp * yaw_error + yaw_pid.ki * yaw_pid.integral + yaw_pid.kd * yaw_derivative;
 
-    // 限制 PWM 范围
-    left_pwm = (left_pwm > 2000) ? 2000 : (left_pwm < 1000) ? 1000: left_pwm;
-    right_pwm = (right_pwm > 2000) ? 2000 : (right_pwm < 1000) ? 1000: right_pwm;
+    // 计算左右推进器PWM值
+    int16_t left_pwm = PWM_STOP + (int16_t)speed_output - (int16_t)yaw_output;
+    int16_t right_pwm = PWM_STOP + (int16_t)speed_output + (int16_t)yaw_output;
 
-    // 设置 PWM 输出
-    pwm_output[0] = left_pwm;
-    pwm_output[3] = right_pwm;
+    // 限制PWM值范围
+    if (left_pwm > PWM_MAX)
+        left_pwm = PWM_MAX;
+    if (left_pwm < PWM_MIN)
+        left_pwm = PWM_MIN;
+    if (right_pwm > PWM_MAX)
+        right_pwm = PWM_MAX;
+    if (right_pwm < PWM_MIN)
+        right_pwm = PWM_MIN;
+
+    pwm[0] = left_pwm;
+    pwm[3] = right_pwm;
+}
+
+static void tim2_init(void)
+{
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+    TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
+    TIM_TimeBaseStructure.TIM_Prescaler = 71999; // 1ms自增一次
+    TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+    TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
+    TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
+    TIM_Cmd(TIM2, ENABLE);
 }

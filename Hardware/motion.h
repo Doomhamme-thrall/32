@@ -3,21 +3,27 @@
 
 #include "stm32f10x.h"
 
-// PID 参数结构
 typedef struct
 {
-    float target_value; // 目标值
-    float kp;           // 比例增益
-    float ki;           // 积分增益
-    float kd;           // 微分增益
-    float prev_error;   // 上一次误差
-    float integral;     // 累积误差
-} PID_t;
+    float kp;
+    float ki;
+    float kd;
+    float prev_error;
+    float integral;
+} PID_Params;
 
-// 初始化运动控制器
-void Motion_Init(float kp, float ki, float kd);
+// 运动控制PID初始化
+//  参数:
+//    kp1 - 推进PID的比例系数
+//    ki1 - 推进PID的积分系数
+//    kd1 - 推进PID的微分系数
+//    kp2 - 偏航PID的比例系数
+//    ki2 - 偏航PID的积分系数
+//    kd2 - 偏航PID的微分系数
+void Motion_init(float kp1, float ki1, float kd1, float kp2, float ki2, float kd2);
 
 // 运动控制函数
-void Motion_Control(float target_accel, float target_angle, float current_accel, float current_yaw_rate, int16_t pwm_output[4]);
+// 参数：前进功率(0-100)，后退功率(0-100)，转向幅度(-100~100)
+void Motion_Calculate(float current_acceleration, float current_yaw_rate, int RT, int LT, int LS, uint16_t pwm[4]);
 
 #endif // MOTION_H

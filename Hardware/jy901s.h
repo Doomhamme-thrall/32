@@ -6,6 +6,7 @@
 // 数据结构定义
 typedef struct
 {
+	float m, s, ms;			// 时间 (分:秒:毫秒)
 	float ax, ay, az;		// 加速度 (g)
 	float wx, wy, wz;		// 角速度 (°/s)
 	float roll, pitch, yaw; // 角度 (°)

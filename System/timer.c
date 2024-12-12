@@ -9,8 +9,8 @@ void timer_init(void)
 	TIM_TimeBaseInitTypeDef TimTimeBaseInitScture;
 	TimTimeBaseInitScture.TIM_ClockDivision = TIM_CKD_DIV1;		// 采样时钟分频
 	TimTimeBaseInitScture.TIM_CounterMode = TIM_CounterMode_Up; // 上升计数
-	TimTimeBaseInitScture.TIM_Period = 9999;					// 计数周期
-	TimTimeBaseInitScture.TIM_Prescaler = 7199;					// 计数分频
+	TimTimeBaseInitScture.TIM_Period = 0xFFFFFFFF;				// 计数周期
+	TimTimeBaseInitScture.TIM_Prescaler = (SystemCoreClock / 1000000) - 1;
 	TimTimeBaseInitScture.TIM_RepetitionCounter = 0;
 	TIM_TimeBaseInit(TIM2, &TimTimeBaseInitScture);
 
