@@ -16,13 +16,12 @@ float target_yaw_rate = 0.0f;
 static void tim2_init(void);
 
 // 运动控制PID初始化
-//  参数:
-//    kp1 - 推进PID的比例系数
-//    ki1 - 推进PID的积分系数
-//    kd1 - 推进PID的微分系数
-//    kp2 - 偏航PID的比例系数
-//    ki2 - 偏航PID的积分系数
-//    kd2 - 偏航PID的微分系数
+// kp1:推进PID的比例系数
+// ki1:推进PID的积分系数
+// kd1:推进PID的微分系数
+// kp2:偏航PID的比例系数
+// ki2:偏航PID的积分系数
+// kd2:偏航PID的微分系数
 void Motion_init(float kp1, float ki1, float kd1, float kp2, float ki2, float kd2)
 {
     speed_pid.kp = kp1;
@@ -35,7 +34,10 @@ void Motion_init(float kp1, float ki1, float kd1, float kp2, float ki2, float kd
 }
 
 // 运动控制函数
-void Motion_Calculate(float current_acceleration, float current_yaw_rate, int RT, int LT, int LS, uint16_t pwm[4])
+// current_acceleration:当前加速度 由陀螺仪读取
+// current_yaw_rate : 当前偏航角速度 由陀螺仪读取
+// RT LT LS:右扳机 左扳机 左摇杆
+void Motion_Calculate(float current_acceleration, float current_yaw_rate, uint8_t RT, uint8_t LT, uint8_t LS, uint16_t pwm[4])
 {
     target_speed = SPEED_MAX * RT / 100.0;
     target_yaw_rate = YAW_RATE_MAX * LS / 100.0;
@@ -81,6 +83,8 @@ void Motion_Calculate(float current_acceleration, float current_yaw_rate, int RT
     pwm[3] = right_pwm;
 }
 
+// TIM2初始化
+// 用于计算dt
 static void tim2_init(void)
 {
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);

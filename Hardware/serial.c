@@ -6,12 +6,13 @@
 #include "serial.h"
 
 #define FRAME_SIZE 11
-#define BUFFER_SIZE 33 // 必须是 FRAME_SIZE 的整数倍
-static uint8_t dma_buffer[BUFFER_SIZE];
+#define BUFFER_SIZE 33
+static uint8_t dma_buffer[BUFFER_SIZE]; //缓冲区
 static uint16_t last_position = 0;
 
 static SerialData_t serial_data;
 
+// 串口3初始化函数
 void serial3_init(void)
 {
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
@@ -51,26 +52,24 @@ void serial3_init(void)
     USART_Cmd(USART3, ENABLE);
 }
 
+// 串口1初始化函数
 void serial1_init(void)
 {
-    // 启用GPIOA和USART1的时钟
+    // 启用GPIOA和USART1
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_USART1 | RCC_APB2Periph_AFIO, ENABLE);
 
-    // 初始化GPIO结构体
+    // GPIO初始化
     GPIO_InitTypeDef GPIO_InitStruct;
 
-    // 配置USART1 TX (PA9)为复用推挽输出
     GPIO_InitStruct.GPIO_Pin = GPIO_Pin_9;
-    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF_PP;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF_PP; // 复用推挽输出
     GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    // 配置USART1 RX (PA10)为浮空输入
     GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10;
-    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING; // 浮空输入
     GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    // 配置USART1
+    // USART1初始化
     USART_InitTypeDef USART_InitStruct;
     USART_InitStruct.USART_BaudRate = 9600;
     USART_InitStruct.USART_WordLength = USART_WordLength_8b;
@@ -101,10 +100,11 @@ void serial1_init(void)
     DMA_Init(DMA1_Channel5, &DMA_InitStruct);
     DMA_Cmd(DMA1_Channel5, ENABLE);
 
-    // USART DMA接收使能
     USART_DMACmd(USART1, USART_DMAReq_Rx, ENABLE);
 }
 
+// 串口缓冲区处理函数
+// 串口数据帧格式：AA __ __ __ __ __ __ __ __ SUM FF
 static void ProcessBuffer(uint8_t *buffer, uint16_t length)
 {
     // printf("\rprocess buffer\n ");
@@ -113,7 +113,7 @@ static void ProcessBuffer(uint8_t *buffer, uint16_t length)
     {
         if (buffer[i] == 0xAA && buffer[i + 10] == 0xFF)
         {
-            //            printf("package found  \n");
+            // printf("package found  \n");
             uint32_t checksum = 0;
             for (uint8_t j = 0; j < 9; j++)
             {
@@ -122,7 +122,7 @@ static void ProcessBuffer(uint8_t *buffer, uint16_t length)
 
             if (checksum % 256 == buffer[i + 9])
             {
-                printf("checksum correct\n");
+                // printf("checksum correct\n");
                 memcpy(&serial_data, &buffer[i + 1], sizeof(SerialData_t));
                 i += FRAME_SIZE - 1; // 跳过已处理的数据
             }
@@ -134,14 +134,15 @@ static void ProcessBuffer(uint8_t *buffer, uint16_t length)
     }
 }
 
-// 处理 DMA 数据
+// 串口DMA数据处理函数
 void Serial_ProcessDMA(void)
 {
-    //     printf("\rprocess dma\n ");
-    //     for (int i = 0; i < 46; i++)
-    //     {
-    //         printf("%d ", dma_buffer[i]);
-    //     }
+        // printf("\rprocess dma\n ");
+        // for (int i = 0; i < 46; i++)
+        // {
+        //     printf("%d ", dma_buffer[i]);
+        // }
+        // printf("\n");
     uint16_t current_position = BUFFER_SIZE - DMA_GetCurrDataCounter(DMA1_Channel5);
     // printf("\rcurrent_position1: %d\n ", current_position);
     if (current_position != last_position)
@@ -160,7 +161,8 @@ void Serial_ProcessDMA(void)
     }
 }
 
-// 获取解码后的数据
+// 串口数据查询函数
+// *data：串口数据存放地址
 void Serial_GetData(SerialData_t *data)
 {
     // printf("get data\n");
@@ -178,6 +180,7 @@ void Serial_GetData(SerialData_t *data)
     }
 }
 
+// 串口发送字节函数
 void Serial_SendByte(uint8_t Byte)
 {
     USART_SendData(USART1, Byte);
@@ -185,6 +188,7 @@ void Serial_SendByte(uint8_t Byte)
         ;
 }
 
+// 串口发送数组函数
 void Serial_SendArray(uint8_t *Array, uint16_t Length)
 {
     uint16_t i;
@@ -194,6 +198,7 @@ void Serial_SendArray(uint8_t *Array, uint16_t Length)
     }
 }
 
+// 串口发送字符串函数
 void Serial_SendString(char *String)
 {
     uint8_t i;
@@ -203,6 +208,7 @@ void Serial_SendString(char *String)
     }
 }
 
+// 数字幂函数
 uint32_t Serial_Pow(uint32_t X, uint32_t Y)
 {
     uint32_t Result = 1;
@@ -213,6 +219,7 @@ uint32_t Serial_Pow(uint32_t X, uint32_t Y)
     return Result;
 }
 
+// 串口发送数字函数
 void Serial_SendNumber(uint32_t Number, uint8_t Length)
 {
     uint8_t i;
@@ -222,21 +229,18 @@ void Serial_SendNumber(uint32_t Number, uint8_t Length)
     }
 }
 
+// 重映射printf
 int fputc(int ch, FILE *f)
 {
-    // 等待 USART1 数据寄存器为空
     while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET)
         ;
-    // 发送字符
     USART_SendData(USART1, (uint8_t)ch);
-
-    // 等待传输完成
     while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET)
         ;
-
     return ch;
 }
 
+// 串口printf函数（封装版）
 void Serial_Printf(char *format, ...)
 {
     char String[100];

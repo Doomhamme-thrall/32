@@ -4,17 +4,16 @@
 #include "serial.h"
 
 #define BUFFER_SIZE 22 
-static uint8_t dma_buffer[BUFFER_SIZE];
+static uint8_t dma_buffer[BUFFER_SIZE]; //缓冲区
 static uint16_t last_position = 0; // 上次处理到的缓冲区位置
 
-// 数据存储结构体
 static JY901S_Data_t jy901s_data;
 
 // 私有函数声明
 static void JY901S_ProcessBuffer(uint8_t *buffer, uint16_t length);
 static void JY901S_SendCommand(uint8_t *cmd, uint8_t length);
 
-// 初始化函数
+// JY901S 初始化函数
 void JY901S_Init(void)
 {
     // GPIO 初始化
@@ -22,19 +21,15 @@ void JY901S_Init(void)
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
 
     GPIO_InitTypeDef GPIO_InitStruct;
-
-    // USART2 TX (PA2) 配置为复用推挽输出
     GPIO_InitStruct.GPIO_Pin = GPIO_Pin_2;
-    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF_PP;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF_PP;// 复用推挽输出
     GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    // USART2 RX (PA3) 配置为浮空输入
     GPIO_InitStruct.GPIO_Pin = GPIO_Pin_3;
-    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;// 浮空输入
     GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    // USART 配置
+    // USART2 初始化
     USART_InitTypeDef USART_InitStruct;
     USART_InitStruct.USART_BaudRate = 9600;
     USART_InitStruct.USART_WordLength = USART_WordLength_8b;
@@ -65,10 +60,9 @@ void JY901S_Init(void)
     DMA_Init(DMA1_Channel6, &DMA_InitStruct);
     DMA_Cmd(DMA1_Channel6, ENABLE);
 
-    // USART DMA 接收使能
     USART_DMACmd(USART2, USART_DMAReq_Rx, ENABLE);
 
-    // 初始化指令发送
+    // JY901S控制指令集
     uint8_t cmds[][5] = {
         {0xff, 0xaa, 0x69, 0x88, 0xb5}, // 0解锁指令
         {0xff, 0xaa, 0x00, 0x01, 0x00}, // 1恢复默认设置
@@ -115,6 +109,7 @@ void JY901S_ProcessDMA(void)
 }
 
 // 数据帧处理函数
+// 数据帧格式：55  5_ __ __ __ __ __ __ __ SUM
 static void JY901S_ProcessBuffer(uint8_t *buffer, uint16_t length)
 {
     for (uint16_t i = 0; i < length; i += 11)
@@ -136,25 +131,25 @@ static void JY901S_ProcessBuffer(uint8_t *buffer, uint16_t length)
                     jy901s_data.m = buffer[i + 6];
                     jy901s_data.s = buffer[i + 7];
                     jy901s_data.ms = (buffer[i + 9] << 8) | buffer[i + 8];
-                    printf("time received");
+                    // printf("time received");
                     break;
                 case 0x51:
                     jy901s_data.ax = ((int16_t)((buffer[i + 3] << 8) | buffer[i + 2])) / 32768.0f * 16.0f;
                     jy901s_data.ay = ((int16_t)((buffer[i + 5] << 8) | buffer[i + 4])) / 32768.0f * 16.0f;
                     jy901s_data.az = ((int16_t)((buffer[i + 7] << 8) | buffer[i + 6])) / 32768.0f * 16.0f;
-                    printf("acc received ");
+                    // printf("acc received ");
                     break;
                 case 0x52:
                     jy901s_data.wx = ((int16_t)((buffer[i + 3] << 8) | buffer[i + 2])) / 32768.0f * 2000.0f;
                     jy901s_data.wy = ((int16_t)((buffer[i + 5] << 8) | buffer[i + 4])) / 32768.0f * 2000.0f;
                     jy901s_data.wz = ((int16_t)((buffer[i + 7] << 8) | buffer[i + 6])) / 32768.0f * 2000.0f;
-                    printf("gyro received ");
+                    // printf("gyro received ");
                     break;
                 case 0x53:
                     jy901s_data.roll = ((int16_t)((buffer[i + 3] << 8) | buffer[i + 2])) / 32768.0f * 180.0f;
                     jy901s_data.pitch = ((int16_t)((buffer[i + 5] << 8) | buffer[i + 4])) / 32768.0f * 180.0f;
                     jy901s_data.yaw = ((int16_t)((buffer[i + 7] << 8) | buffer[i + 6])) / 32768.0f * 180.0f;
-                    printf("angle received ");
+                    // printf("angle received ");
                     break;
                 default:
                     break;
@@ -164,7 +159,8 @@ static void JY901S_ProcessBuffer(uint8_t *buffer, uint16_t length)
     }
 }
 
-// 获取数据
+// 数据查询函数
+// *data:传感器数据存放地址
 void JY901S_GetData(JY901S_Data_t *data)
 {
     if (data)
@@ -173,7 +169,7 @@ void JY901S_GetData(JY901S_Data_t *data)
     }
 }
 
-// 发送指令
+// JY901S 发送指令函数
 static void JY901S_SendCommand(uint8_t *cmd, uint8_t length)
 {
     for (uint8_t i = 0; i < length; i++)

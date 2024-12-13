@@ -29,19 +29,30 @@ int main(void)
 		JY901S_GetData(&sensor_data);
 		Serial_ProcessDMA();
 		Serial_GetData(&serial3_data);
-		Balance_Calculate(sensor_data.roll, sensor_data.wy, serial3_data.RS, pwm);
-		Motion_Calculate(sensor_data.ay, sensor_data.wy, serial3_data.RT, serial3_data.LT, serial3_data.LS, pwm);
+		// Balance_Calculate(sensor_data.roll, sensor_data.wy, serial3_data.RS, pwm);
+		// Motion_Calculate(sensor_data.ay, sensor_data.wy, serial3_data.RT, serial3_data.LT, serial3_data.LS, pwm);
+		measure_calculate(serial3_data.A, serial3_data.B, serial3_data.X, serial3_data.Y, pwm);
 		PWM_Set(pwm);
 
 		// 打印手柄数据
-		// printf("%d ", serial3_data.RT);
-		// printf("%d ", serial3_data.LT);
-		// printf("%d ", serial3_data.RS);
-		// printf("%d ", serial3_data.LS);
-		// printf("%d ", serial3_data.A);
-		// printf("%d ", serial3_data.B);
-		// printf("%d ", serial3_data.X);
-		// printf("%d ,", serial3_data.Y);
+		// printf("RT:%d ", serial3_data.RT);
+		// printf("LT:%d ", serial3_data.LT);
+		// printf("RS:%d ", serial3_data.RS);
+		// printf("LS:%d ", serial3_data.LS);
+		printf("A:%d ", serial3_data.A);
+		printf("B:%d ", serial3_data.B);
+		printf("X:%d ", serial3_data.X);
+		printf("Y:%d ,", serial3_data.Y);
+		//打印传感器数据
+		// printf("roll: %f ", sensor_data.roll);
+		// printf("pitch: %f ", sensor_data.pitch);
+		// printf("yaw: %f ", sensor_data.yaw);
+		// printf("ax: %f ", sensor_data.ax);
+		// printf("ay: %f ", sensor_data.ay);
+		// printf("az: %f ", sensor_data.az);
+		// printf("wx: %f ", sensor_data.wx);
+		// printf("wy: %f ", sensor_data.wy);
+		// printf("wz: %f ", sensor_data.wz);
 		
 	}
 }

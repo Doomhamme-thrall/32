@@ -11,10 +11,7 @@ typedef struct
     float prev_error;        // 上一次误差
 } BalanceParams_t;
 
-// 初始化平衡控制器
 void Balance_Init(float kp, float kd);
-
-// 平衡控制函数
-void Balance_Calculate(float current_roll_angle, float current_roll_rate, int RS, uint16_t pwm[4]);
+void Balance_Calculate(float current_roll_angle, float current_roll_rate, uint8_t RS, uint16_t pwm[4]);
 
 #endif // BALANCE_H
