@@ -36,6 +36,9 @@ void w25q64_init(void)
     spi_init();
 }
 
+// W25Q64读取ID函数
+// MID:制造商ID
+// DID:器件ID
 void w25q64_read_id(uint8_t *MID, uint16_t *DID)
 {
     spi_start();
@@ -50,6 +53,7 @@ void w25q64_read_id(uint8_t *MID, uint16_t *DID)
     spi_stop();
 }
 
+// W25Q64写使能函数
 void w25q64_w_enable(void)
 {
     spi_start();
@@ -57,6 +61,7 @@ void w25q64_w_enable(void)
     spi_stop();
 }
 
+// W25Q64等待忙函数
 void w25q64_waitbusy(void)
 {
     spi_start();
@@ -66,6 +71,10 @@ void w25q64_waitbusy(void)
     spi_stop();
 }
 
+// W25Q64数据写入函数
+//  address:写入地址
+//  dataarray:数据数组
+//  count:数据长度
 void w25q64_page_write(uint32_t address, uint8_t *dataarray, uint16_t count)
 {
     uint16_t i;
@@ -83,6 +92,8 @@ void w25q64_page_write(uint32_t address, uint8_t *dataarray, uint16_t count)
     w25q64_waitbusy();
 }
 
+// W25Q64扇区擦除函数
+//  address:擦除地址
 void w25q64_sector_erase(uint32_t address)
 {
     w25q64_w_enable();
@@ -95,6 +106,10 @@ void w25q64_sector_erase(uint32_t address)
     w25q64_waitbusy();
 }
 
+// W25Q64数据读取函数
+//  address:读取地址
+//  dataarray:存放数据数组
+//  count:数据长度
 void w25q64_read(uint32_t address, uint8_t *dataarray, uint32_t count)
 {
     uint16_t i;
