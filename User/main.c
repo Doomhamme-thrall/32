@@ -10,49 +10,41 @@
 #include "jy901s.h"
 #include "balance.h"
 #include "motion.h"
+#include "w25q64.h"
+
+uint8_t mid;
+uint16_t did;
 
 int main(void)
 {
+	OLED_Init();
 
-	PWM_Init();
-	serial1_init();
-	serial3_init();
-	JY901S_Init();
-	Balance_Init(1, 1);
-	Motion_init(0, 0, 0, 0, 0, 0);
-	uint16_t pwm[] = {1500, 1500, 1500, 1500};
-	JY901S_Data_t sensor_data;
-	SerialData_t serial3_data;
+	uint8_t data_write[4] = {0xa1, 0x22, 0x03, 0x04};
+	uint8_t data_read[4] = {0};
+
+	w25q64_init();
+	w25q64_read_id(&mid, &did);
+
+	OLED_ShowHexNum(1, 1, mid, 2);
+	OLED_ShowHexNum(1, 4, did, 4);
+
+	w25q64_sector_erase(0x000000);
+	w25q64_page_write(0x000000, data_write, 4);
+
+	w25q64_read(0x000000, data_read, 4);
+
+	OLED_ShowHexNum(2, 1, data_read[0], 2);
+	OLED_ShowHexNum(2, 4, data_read[1], 2);
+	OLED_ShowHexNum(2, 7, data_read[2], 2);
+	OLED_ShowHexNum(2, 10, data_read[3], 2);
+
+	// OLED_ShowHexNum(3, 1, data_write[0], 2);
+	// OLED_ShowHexNum(3, 4, data_write[1], 2);
+	// OLED_ShowHexNum(3, 7, data_write[2], 2);
+	// OLED_ShowHexNum(3, 10, data_write[3], 2);
+
 	while (1)
 	{
-		JY901S_ProcessDMA();
-		JY901S_GetData(&sensor_data);
-		Serial_ProcessDMA();
-		Serial_GetData(&serial3_data);
-		// Balance_Calculate(sensor_data.roll, sensor_data.wy, serial3_data.RS, pwm);
-		// Motion_Calculate(sensor_data.ay, sensor_data.wy, serial3_data.RT, serial3_data.LT, serial3_data.LS, pwm);
-		measure_calculate(serial3_data.A, serial3_data.B, serial3_data.X, serial3_data.Y, pwm);
-		PWM_Set(pwm);
 
-		// 打印手柄数据
-		// printf("RT:%d ", serial3_data.RT);
-		// printf("LT:%d ", serial3_data.LT);
-		// printf("RS:%d ", serial3_data.RS);
-		// printf("LS:%d ", serial3_data.LS);
-		printf("A:%d ", serial3_data.A);
-		printf("B:%d ", serial3_data.B);
-		printf("X:%d ", serial3_data.X);
-		printf("Y:%d ,", serial3_data.Y);
-		//打印传感器数据
-		// printf("roll: %f ", sensor_data.roll);
-		// printf("pitch: %f ", sensor_data.pitch);
-		// printf("yaw: %f ", sensor_data.yaw);
-		// printf("ax: %f ", sensor_data.ax);
-		// printf("ay: %f ", sensor_data.ay);
-		// printf("az: %f ", sensor_data.az);
-		// printf("wx: %f ", sensor_data.wx);
-		// printf("wy: %f ", sensor_data.wy);
-		// printf("wz: %f ", sensor_data.wz);
-		
 	}
 }
