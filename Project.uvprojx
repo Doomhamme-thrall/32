@@ -680,6 +680,16 @@
               <FileType>5</FileType>
               <FilePath>.\system\dma.h</FilePath>
             </File>
+            <File>
+              <FileName>rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hardware\rtc.c</FilePath>
+            </File>
+            <File>
+              <FileName>rtc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\hardware\rtc.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

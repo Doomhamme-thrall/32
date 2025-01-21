@@ -11,40 +11,29 @@
 #include "balance.h"
 #include "motion.h"
 #include "w25q64.h"
+#include "rtc.h"
 
-uint8_t mid;
-uint16_t did;
+SerialData_t serial_data;
 
 int main(void)
 {
 	OLED_Init();
+	rtc_init();
+	RTC_SetAlarm(RTC_GetCounter() + 10);
+	PWR_WakeUpPinCmd(ENABLE);
 
-	uint8_t data_write[4] = {0xa1, 0x22, 0x03, 0x04};
-	uint8_t data_read[4] = {0};
-
-	w25q64_init();
-	w25q64_read_id(&mid, &did);
-
-	OLED_ShowHexNum(1, 1, mid, 2);
-	OLED_ShowHexNum(1, 4, did, 4);
-
-	w25q64_sector_erase(0x000000);
-	w25q64_page_write(0x000000, data_write, 4);
-
-	w25q64_read(0x000000, data_read, 4);
-
-	OLED_ShowHexNum(2, 1, data_read[0], 2);
-	OLED_ShowHexNum(2, 4, data_read[1], 2);
-	OLED_ShowHexNum(2, 7, data_read[2], 2);
-	OLED_ShowHexNum(2, 10, data_read[3], 2);
-
-	// OLED_ShowHexNum(3, 1, data_write[0], 2);
-	// OLED_ShowHexNum(3, 4, data_write[1], 2);
-	// OLED_ShowHexNum(3, 7, data_write[2], 2);
-	// OLED_ShowHexNum(3, 10, data_write[3], 2);
-
+	OLED_ShowNum(1, 1, SystemCoreClock, 10);
 	while (1)
 	{
+		OLED_ShowNum(2, 1, RTC_GetCounter(), 10);
+		OLED_ShowNum(3, 1, RTC_GetFlagStatus(RTC_FLAG_ALR), 1);
 
+		OLED_ShowString(4, 1, "Hello, World");
+		Delay_ms(100);
+		OLED_ShowString(4, 1, "            ");
+		Delay_ms(100);
+
+		PWR_EnterSTANDBYMode();
+		
 	}
 }

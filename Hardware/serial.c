@@ -162,12 +162,9 @@ void Serial_GetData(SerialData_t *data)
 
 int fputc(int ch, FILE *f)
 {
-    // 等待 USART3 的数据寄存器空标志位设置
     while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET)
         ;
-    // 发送数据
     USART_SendData(USART3, (uint8_t)ch);
-    // 等待传输完成标志位设置
     while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET)
         ;
     return ch;
