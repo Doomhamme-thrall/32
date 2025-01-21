@@ -18,22 +18,29 @@ SerialData_t serial_data;
 int main(void)
 {
 	OLED_Init();
-	rtc_init();
-	RTC_SetAlarm(RTC_GetCounter() + 10);
-	PWR_WakeUpPinCmd(ENABLE);
+	if (RCC_GetFlagStatus(RCC_FLAG_WWDGRST) == SET)
+	{
+		OLED_ShowString(1, 1, "WWDG Reset");
+		Delay_ms(500);
+		OLED_ShowString(1, 1, "          ");
+		RCC_ClearFlag();
+	}
+	else
+	{
+		OLED_ShowString(2, 1, "Reset");
+		Delay_ms(500);
+		OLED_ShowString(2, 1, "     ");
+	}
 
-	OLED_ShowNum(1, 1, SystemCoreClock, 10);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_WWDG, ENABLE);
+	WWDG_SetPrescaler(WWDG_Prescaler_8);
+	WWDG_SetWindowValue(0x40 | 0x21);
+	WWDG_Enable(0x40 | 54);
+
 	while (1)
 	{
-		OLED_ShowNum(2, 1, RTC_GetCounter(), 10);
-		OLED_ShowNum(3, 1, RTC_GetFlagStatus(RTC_FLAG_ALR), 1);
 
-		OLED_ShowString(4, 1, "Hello, World");
-		Delay_ms(100);
-		OLED_ShowString(4, 1, "            ");
-		Delay_ms(100);
-
-		PWR_EnterSTANDBYMode();
-		
+		Delay_ms(45);
+		WWDG_SetCounter(0x50 | 54);
 	}
 }
