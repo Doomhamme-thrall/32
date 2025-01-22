@@ -30,7 +30,7 @@ void serial1_init(void)
 
     // USART1 初始化
     USART_InitTypeDef USART_InitStruct;
-    USART_InitStruct.USART_BaudRate = 9600;
+    USART_InitStruct.USART_BaudRate = 115200;
     USART_InitStruct.USART_WordLength = USART_WordLength_8b;
     USART_InitStruct.USART_StopBits = USART_StopBits_1;
     USART_InitStruct.USART_Parity = USART_Parity_No;
@@ -39,7 +39,7 @@ void serial1_init(void)
     USART_Init(USART1, &USART_InitStruct);
     USART_Cmd(USART1, ENABLE);
 
-    //nvic初始化
+    // nvic初始化
     NVIC_InitTypeDef NVIC_InitStruct;
     NVIC_InitStruct.NVIC_IRQChannel = USART1_IRQn;
     NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0;
@@ -49,8 +49,6 @@ void serial1_init(void)
 
     USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
 }
-
-
 
 // USART3 初始化
 void serial3_init(void)
@@ -106,13 +104,13 @@ void serial3_init(void)
 // DMA 数据处理函数
 void Serial3_ProcessDMA(void)
 {
-    // printf("Serial3_ProcessDMA\n");
+    printf("Serial3_ProcessDMA\n");
     for (int i = 0; i < USART3_BUFFER_SIZE; i++)
     {
         printf("%d ", usart3_dma_buffer[i]);
     }
     uint16_t current_position = USART3_BUFFER_SIZE - DMA_GetCurrDataCounter(DMA1_Channel3);
-    // printf("current_position: %d\n", current_position);
+    printf("current_position: %d\n", current_position);
     if (current_position != usart3_last_position)
     {
         if (current_position > usart3_last_position)
@@ -162,10 +160,10 @@ void Serial_GetData(SerialData_t *data)
 
 int fputc(int ch, FILE *f)
 {
-    while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET)
+    while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET)
         ;
-    USART_SendData(USART3, (uint8_t)ch);
-    while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET)
+    USART_SendData(USART1, (uint8_t)ch);
+    while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET)
         ;
     return ch;
 }
