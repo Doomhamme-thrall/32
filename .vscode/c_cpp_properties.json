@@ -3,15 +3,15 @@
         {
             "name": "Target 1",
             "includePath": [
-                "c:\\Users\\Administrator\\Desktop\\32\\Start",
-                "c:\\Users\\Administrator\\Desktop\\32\\Library",
-                "c:\\Users\\Administrator\\Desktop\\32\\User",
-                "c:\\Users\\Administrator\\Desktop\\32\\System",
-                "c:\\Users\\Administrator\\Desktop\\32\\Hardware",
+                "c:\\Users\\Administrator\\Desktop\\stm32\\Start",
+                "c:\\Users\\Administrator\\Desktop\\stm32\\Library",
+                "c:\\Users\\Administrator\\Desktop\\stm32\\User",
+                "c:\\Users\\Administrator\\Desktop\\stm32\\System",
+                "c:\\Users\\Administrator\\Desktop\\stm32\\Hardware",
                 "C:\\Keil_v5\\ARM\\ARMCC\\include",
                 "C:\\Keil_v5\\ARM\\ARMCC\\include\\rw",
-                "c:\\Users\\Administrator\\Desktop\\32\\system",
-                "c:\\Users\\Administrator\\Desktop\\32\\hardware"
+                "c:\\Users\\Administrator\\Desktop\\stm32\\system",
+                "c:\\Users\\Administrator\\Desktop\\stm32\\hardware"
             ],
             "defines": [
                 "USE_STDPERIPH_DRIVER",

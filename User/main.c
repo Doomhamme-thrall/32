@@ -16,12 +16,16 @@
 
 int main(void)
 {
-	OLED_Init();
-	OLED_ShowHexNum(2, 1, flash_read_half_word(0x1FFFF7E0), 4);
-	OLED_ShowHexNum(3, 1, flash_read_half_word(0x1FFFF7EB), 4);
+	// 初始化PC13
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+	GPIO_SetBits(GPIOC, GPIO_Pin_13);
+	GPIO_ResetBits(GPIOC, GPIO_Pin_13);
 	while (1)
 	{
-
-		// printf("1");
 	}
 }

@@ -19,6 +19,7 @@ typedef struct
 #define FRAME_SIZE 11
 
 void serial3_init(void);
+void serial1_init(void);
 void Serial3_ProcessDMA(void);
 void Serial_GetData(SerialData_t *data);
 

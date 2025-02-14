@@ -4,5 +4,6 @@
     "cstdint": "cpp",
     "serial.h": "c",
     "ad.h": "c"
-  }
+  },
+  "idf.portWin": "COM8"
 }

@@ -16,21 +16,21 @@ void serial1_init(void)
 {
     // GPIO 初始化
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_AFIO, ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
 
     GPIO_InitTypeDef GPIO_InitStruct;
-    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_9;
+    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_9;       // PA9
     GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF_PP; // 复用推挽输出
     GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10;
+    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_10;    // PA10
     GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPU; // 浮空输入
     GPIO_Init(GPIOA, &GPIO_InitStruct);
 
     // USART1 初始化
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
     USART_InitTypeDef USART_InitStruct;
-    USART_InitStruct.USART_BaudRate = 115200;
+    USART_InitStruct.USART_BaudRate = 9600;
     USART_InitStruct.USART_WordLength = USART_WordLength_8b;
     USART_InitStruct.USART_StopBits = USART_StopBits_1;
     USART_InitStruct.USART_Parity = USART_Parity_No;
