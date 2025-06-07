@@ -1,0 +1,4 @@
+.vscode/keil-assistant.log
+.vscode/uv4.log
+*.log
+Objects/
